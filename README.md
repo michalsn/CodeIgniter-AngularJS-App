@@ -1,4 +1,4 @@
-CodeIgniter-AngularJS-App
+CodeIgniter AngularJS App
 =========================
 
-Sample App based on CodeIgniter and AngularJS
+Sample App based on CodeIgniter and AngularJS.
