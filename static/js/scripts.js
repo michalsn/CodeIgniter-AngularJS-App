@@ -13,7 +13,7 @@ function ListCtrl($scope, $location, Project) {
 
   $scope.destroy = function(Project) {
     Project.destroy(function() {
-      $location.path('/');
+      $scope.projects.splice($scope.projects.indexOf(Project), 1);
     });
   };
 }
