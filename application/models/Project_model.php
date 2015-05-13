@@ -33,5 +33,5 @@ class Project_model extends CI_Model
 
 }
 
-/* End of file project_model.php */
-/* Location: ./application/models/project_model.php */
+/* End of file Project_model.php */
+/* Location: ./application/models/Project_model.php */

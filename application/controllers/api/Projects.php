@@ -59,5 +59,5 @@ class Projects extends REST_Controller {
 
 }
 
-/* End of file projects.php */
-/* Location: ./application/controllers/api/projects.php */
+/* End of file Projects.php */
+/* Location: ./application/controllers/api/Projects.php */
