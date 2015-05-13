@@ -9,22 +9,20 @@
  */
 class Format {
 
-	// Array to convert
-	protected $_data = array();
-
-	// View filename
-	protected $_from_type = null;
+	protected $_data = [];        // Array to convert
+	protected $_from_type = NULL; // View filename
 
 	/**
 	 * Returns an instance of the Format object.
 	 *
 	 *     echo $this->format->factory(array('foo' => 'bar'))->to_xml();
 	 *
-	 * @param   mixed  general date to be converted
-	 * @param   string  data format the file was provided in
+	 * @access  public
+	 * @param   $data,      mixed  general date to be converted
+	 * @param   $from_type, string  data format the file was provided in
 	 * @return  Factory
 	 */
-	public function factory($data, $from_type = null)
+	public function factory($data, $from_type = NULL)
 	{
 		// Stupid stuff to emulate the "new static()" stuff in this libraries PHP 5.3 equivalent
 		$class = __CLASS__;
@@ -33,17 +31,21 @@ class Format {
 
 	/**
 	 * Do not use this directly, call factory()
+	 *
+	 * @access public
+	 * @param  $data, bool
+	 * @param  $from_type, bool
 	 */
-	public function __construct($data = null, $from_type = null)
+	public function __construct($data = NULL, $from_type = NULL)
 	{
 		get_instance()->load->helper('inflector');
 
 		// If the provided data is already formatted we should probably convert it to an array
-		if ($from_type !== null)
+		if ($from_type !== NULL)
 		{
 			if (method_exists($this, '_from_' . $from_type))
 			{
-				$data = call_user_func(array($this, '_from_' . $from_type), $data);
+				$data = call_user_func([$this, '_from_' . $from_type], $data);
 			}
 
 			else
@@ -57,19 +59,25 @@ class Format {
 
 	// FORMATING OUTPUT ---------------------------------------------------------
 
-	public function to_array($data = null)
+	/**
+	 * to_array
+	 *
+	 * @access public
+	 * @param  $data
+	 */
+	public function to_array($data = NULL)
 	{
-		// If not just null, but nothing is provided
-		if ($data === null and ! func_num_args())
+		// If not just NULL, but nothing is provided
+		if ($data === NULL && ! func_num_args())
 		{
 			$data = $this->_data;
 		}
 
-		$array = array();
+		$array = [];
 
 		foreach ((array) $data as $key => $value)
 		{
-			if (is_object($value) or is_array($value))
+			if (is_object($value) || is_array($value))
 			{
 				$array[$key] = $this->to_array($value);
 			}
@@ -83,10 +91,17 @@ class Format {
 		return $array;
 	}
 
-	// Format XML for output
-	public function to_xml($data = null, $structure = null, $basenode = 'xml')
+	/**
+	 * Format XML for output
+	 *
+	 * @access public
+	 * @param  $data
+	 * @param  $structure
+	 * @param  $basenode
+	 */
+	public function to_xml($data = NULL, $structure = NULL, $basenode = 'xml')
 	{
-		if ($data === null and ! func_num_args())
+		if ($data === NULL && ! func_num_args())
 		{
 			$data = $this->_data;
 		}
@@ -97,13 +112,13 @@ class Format {
 			ini_set('zend.ze1_compatibility_mode', 0);
 		}
 
-		if ($structure === null)
+		if ($structure === NULL)
 		{
 			$structure = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><$basenode />");
 		}
 
 		// Force it to be something useful
-		if ( ! is_array($data) AND ! is_object($data))
+		if ( ! is_array($data) && ! is_object($data))
 		{
 			$data = (array) $data;
 		}
@@ -127,15 +142,24 @@ class Format {
 			// replace anything not alpha numeric
 			$key = preg_replace('/[^a-z_\-0-9]/i', '', $key);
 
+			if ($key === '_attributes' && (is_array($value) || is_object($value)))
+			{
+				$attributes = $value;
+				if (is_object($attributes)) $attributes = get_object_vars($attributes);
+
+				foreach ($attributes as $attributeName => $attributeValue)
+				{
+					$structure->addAttribute($attributeName, $attributeValue);
+				}
+			}
 			// if there is another array found recursively call this function
-			if (is_array($value) || is_object($value))
+			elseif (is_array($value) || is_object($value))
 			{
 				$node = $structure->addChild($key);
 
 				// recursive call.
 				$this->to_xml($value, $node, $key);
 			}
-
 			else
 			{
 				// add single node.
@@ -148,10 +172,14 @@ class Format {
 		return $structure->asXML();
 	}
 
-	// Format HTML for output
+	/**
+	 * Format HTML for output
+	 *
+	 * @access public
+	 */
 	public function to_html()
 	{
-		$data = $this->_data;
+		$data = (array)$this->_data;
 
 		// Multi-dimensional array
 		if (isset($data[0]) && is_array($data[0]))
@@ -163,7 +191,7 @@ class Format {
 		else
 		{
 			$headings = array_keys($data);
-			$data = array($data);
+			$data = [$data];
 		}
 
 		$ci = get_instance();
@@ -179,10 +207,14 @@ class Format {
 		return $ci->table->generate();
 	}
 
-	// Format CSV for output
+	/**
+	 * Format CSV for output
+	 *
+	 * @access public
+	 */
 	public function to_csv()
 	{
-		$data = $this->_data;
+		$data = (array)$this->_data;
 
 		// Multi-dimensional array
 		if (isset($data[0]) && is_array($data[0]))
@@ -194,47 +226,101 @@ class Format {
 		else
 		{
 			$headings = array_keys($data);
-			$data = array($data);
+			$data = [$data];
 		}
 
-		$output = implode(',', $headings).PHP_EOL;
+		$output = '"'.implode('","', $headings).'"'.PHP_EOL;
 		foreach ($data as &$row)
 		{
-			$output .= '"'.implode('","', $row).'"'.PHP_EOL;
+                	$row    = str_replace('"', '""', $row); // Escape dbl quotes per RFC 4180
+                	$output .= '"'.implode('","', $row).'"'.PHP_EOL;
 		}
 
 		return $output;
 	}
 
-	// Encode as JSON
+	/**
+	 * Encode as JSON
+	 *
+	 * @access public
+	 */
 	public function to_json()
 	{
-		return json_encode($this->_data);
+		$callback = isset($_GET['callback']) ? $_GET['callback'] : '';
+		if ($callback === '')
+		{
+            return json_encode($this->_data);
+
+            /* Had to take out this code, it doesn't work on Objects.
+            $str = $this->_data;
+            array_walk_recursive($str, function(&$item, $key)
+            {
+                if(!mb_detect_encoding($item, 'utf-8', true))
+                {
+                    $item = utf8_encode($item);
+                }
+            });
+
+			return json_encode($str);
+            */
+		}
+
+		// we only honour jsonp callback which are valid javascript identifiers
+		elseif (preg_match('/^[a-z_\$][a-z0-9\$_]*(\.[a-z_\$][a-z0-9\$_]*)*$/i', $callback))
+		{
+			// this is a jsonp request, the content-type must be updated to be text/javascript
+			header("Content-Type: application/javascript");
+			return $callback . "(" . json_encode($this->_data) . ");";
+		}
+		else
+		{
+			// we have an invalid jsonp callback identifier, we'll return plain json with a warning field
+			$this->_data['warning'] = "invalid jsonp callback provided: ".$callback;
+			return json_encode($this->_data);
+		}
 	}
 
-	// Encode as Serialized array
+	/**
+	 * Encode as Serialized array
+	 *
+	 * @access public
+	 */
 	public function to_serialized()
 	{
 		return serialize($this->_data);
 	}
 
-	// Output as a string representing the PHP structure
+	/**
+	 * Output as a string representing the PHP structure
+	 *
+	 * @access public
+	 */
 	public function to_php()
 	{
 		return var_export($this->_data, TRUE);
 	}
 
-	// Format XML for output
+	/**
+	 * Format XML for output
+	 *
+	 * @access protected
+	 * @param  $string
+	 */
 	protected function _from_xml($string)
 	{
-		return $string ? (array) simplexml_load_string($string, 'SimpleXMLElement', LIBXML_NOCDATA) : array();
+		return $string ? (array) simplexml_load_string($string, 'SimpleXMLElement', LIBXML_NOCDATA) : [];
 	}
 
-	// Format CSV for output
-	// This function is DODGY! Not perfect CSV support but works with my REST_Controller
+	/**
+	 * Format CSV for output
+	 * This function is DODGY! Not perfect CSV support but works with my REST_Controller
+	 *
+	 * @access protected
+	 * @param  $string
+	 */
 	protected function _from_csv($string)
 	{
-		$data = array();
+		$data = [];
 
 		// Splits
 		$rows = explode("\n", trim($string));
@@ -253,16 +339,40 @@ class Format {
 		return $data;
 	}
 
-	// Encode as JSON
+	/**
+	 * Encode as JSON
+	 *
+	 * @access private
+	 * @param  string
+	 */
 	private function _from_json($string)
 	{
 		return json_decode(trim($string));
 	}
 
-	// Encode as Serialized array
+	/**
+	 * Encode as Serialized array
+	 *
+	 * @access private
+	 * @param  $string
+	 *
+	 */
 	private function _from_serialize($string)
 	{
 		return unserialize(trim($string));
+	}
+
+
+	/**
+	 * If you provide text/plain value on the Content-type header on a request
+	 * just return the string
+	 *
+	 * @access private
+	 * @param  $string
+	 */
+	private function _from_php($string)
+	{
+		return trim($string);
 	}
 
 }
