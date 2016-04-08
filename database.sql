@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS `projects` (
 #
 
 INSERT INTO `projects` (`id`, `name`, `site`, `description`) VALUES
-(1, 'CodeIgniter', 'http://ellislab.com/codeigniter', 'CodeIgniter is a proven, agile & open PHP web application framework with a small footprint. It is powering the next generation of web apps.'),
+(1, 'CodeIgniter', 'http://codeigniter.com/', 'CodeIgniter is a proven, agile & open PHP web application framework with a small footprint. It is powering the next generation of web apps.'),
 (2, 'AngularJS', 'http://angularjs.org/', 'AngularJS lets you extend HTML vocabulary for your application. The resulting environment is extraordinarily expressive, readable, and quick to develop.');
