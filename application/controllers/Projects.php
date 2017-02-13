@@ -19,5 +19,6 @@ class Projects extends CI_Controller {
 
 }
 
+/*Hello World*/
 /* End of file Projects.php */
 /* Location: ./application/controllers/Projects.php */
